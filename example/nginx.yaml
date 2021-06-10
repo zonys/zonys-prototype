@@ -1,0 +1,14 @@
+prepend:
+  - base.yaml
+
+provision:
+  - package:
+      - nginx
+  - service:
+      name: nginx
+      enable: true
+
+execute:
+  rc: true
+
+network: host

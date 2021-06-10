@@ -1,0 +1,7 @@
+prepend:
+  - nginx.yaml
+
+mount:
+  - path:
+      source: ./
+      destination: /usr/local/www

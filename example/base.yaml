@@ -1,0 +1,9 @@
+variable:
+  freebsd:
+    version: 13
+    branch: RELEASE
+
+provision:
+  - archive:
+      source: http://ftp.freebsd.org/pub/FreeBSD/releases/amd64/{freebsd.version}-{freebsd.branch}/base.txz
+      destination: /
