@@ -6,15 +6,15 @@ Although being used in a production environment, zonys has to be declared as *ex
 ## Installing
 As for now, zonys can be downloaded from pypi only. Nevertheless, a port will be provided in the future.
 
-### Without virtualenv
+### Without virtualenv (not recommended)
 ```
-pkg install python38 py38-setuptools py38-pip py38-libzfs
+pkg install curl python38 py38-setuptools py38-pip py38-libzfs
 pip install zonys
 ```
 
 ### With virtualenv
 ```
-pkg install python38 py38-setuptools py38-pip py38-virtualenv
+pkg install curl python38 py38-setuptools py38-pip py38-virtualenv
 
 virtualenv environment
 cd environment
