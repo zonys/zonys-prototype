@@ -7,7 +7,7 @@ with open("README.md", encoding="utf-8") as handle:
 
 setuptools.setup(
     name="zonys",
-    version="0.2.0",
+    version="0.2.1",
     description="Another container and execution environment manager for the FreeBSD operating system.",
     long_description=readme,
     long_description_content_type="text/markdown",
@@ -30,7 +30,7 @@ setuptools.setup(
         "colorama>=0.4",
         "commonmark>=0.9",
         "mergedeep>=1.3",
-        "pycurl>=0.11",
+        "pycurl>=7.43",
         "rich>=10.3",
         "ruamel.yaml.clib>=0.2",
         "ruamel.yaml>=0.17",
