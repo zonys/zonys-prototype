@@ -7,7 +7,7 @@ with open("README.md", encoding="utf-8") as handle:
 
 setuptools.setup(
     name="zonys",
-    version="0.2.1",
+    version="0.2.2",
     description="Another container and execution environment manager for the FreeBSD operating system.",
     long_description=readme,
     long_description_content_type="text/markdown",
