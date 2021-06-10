@@ -8,13 +8,13 @@ As for now, zonys can be downloaded from pypi only. Nevertheless, a port will be
 
 ### Without virtualenv (not recommended)
 ```
-pkg install curl python38 py38-setuptools py38-pip py38-libzfs
+pkg install curl git python38 py38-setuptools py38-pip py38-libzfs
 pip install zonys
 ```
 
 ### With virtualenv
 ```
-pkg install curl python38 py38-setuptools py38-pip py38-virtualenv
+pkg install curl git python38 py38-setuptools py38-pip py38-virtualenv
 
 virtualenv environment
 cd environment
