@@ -145,17 +145,32 @@ class _Zones:
 
         return self.__handles[str(value)]
 
+    @staticmethod
+    def __match_identifier(handle: "_Handle", value: str):
+        return str(handle.uuid).startswith(value) or (
+            handle.name is not None and handle.name.startswith(value)
+        )
+
     def match(self, value: typing.Union[str, uuid.UUID]) -> typing.List["_Handle"]:
         match_value = str(value)
         result = []
 
         for handle in self:
-            if str(handle.uuid).startswith(match_value) or (
-                handle.name is not None and handle.name.startswith(match_value)
-            ):
+            if _Zones.__match_identifier(handle, match_value):
                 result.append(handle)
 
         return result
+
+    def match_one(
+        self, value: typing.Union[str, uuid.UUID]
+    ) -> "_Handle":
+        match_value = str(value)
+
+        for handle in self:
+            if _Zones.__match_identifier(handle, match_value):
+                return handle
+
+        raise NotFoundError(value)
 
     def create(self, **kwargs) -> "_Handle":
         configuration = kwargs
@@ -198,7 +213,7 @@ class _Zones:
 
             if file_system is None:
                 file_system = file_system_identifier.create()
-            elif file_system.identifier == file_system_identifier:
+            elif file_system.identifier != file_system_identifier:
                 raise IllegalFileSystemIdentifierError()
 
             if not file_system.is_mounted():
@@ -211,12 +226,12 @@ class _Zones:
                 configuration,
             )
 
-            handle.snapshots.create("initial")
-
             manager.commit(
                 "after_create_zone",
                 zone=handle,
             )
+
+            handle.snapshots.create("initial")
 
             if handle.name is not None and handle.name in self:
                 raise NameAlreadyUsedError()
@@ -314,10 +329,10 @@ class _Handle:
         return str(self.uuid)
 
     @property
-    def parent(self) -> typing.Optional["zonys.core.zone._Snapshot"]:
-        parent = self.__persistence.get("parent", None)
-        if parent is not None:
-            return self.manager.zones[parent["zone"]].snapshots[parent["zone_snapshot"]]
+    def base(self) -> typing.Optional["zonys.core.zone._Snapshot"]:
+        base = self.__persistence.get("base", None)
+        if base is not None:
+            return self.manager.zones[base].snapshots["initial"]
 
         return None
 
@@ -551,7 +566,7 @@ class _Configuration:
     @property
     def entities(self) -> typing.List[typing.Mapping[typing.Any, typing.Any]]:
         result = [self.local]
-        parent = self.__handle.parent
+        parent = self.__handle.base
 
         if parent is not None:
             result.extend(parent.zone_handle.configuration.entities)

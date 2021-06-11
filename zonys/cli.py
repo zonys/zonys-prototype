@@ -111,7 +111,7 @@ def _zone_status(
 
     table.add_column("UUID")
     table.add_column("Name")
-    table.add_column("Parent")
+    table.add_column("Base")
     table.add_column("Snapshots")
     table.add_column("Status")
 
@@ -120,18 +120,18 @@ def _zone_status(
         if zone.is_running():
             status = "Up"
 
-        parent = zone.parent
-        parent_output = ""
-        if parent is not None:
-            parent_output = "{}@{}".format(
-                parent.zone_handle.identifier,
-                parent.name,
+        base = zone.base
+        base_output = ""
+        if base is not None:
+            base_output = "{}@{}".format(
+                base.zone_handle.identifier,
+                base.name,
             )
 
         table.add_row(
             str(zone.uuid),
             zone.name,
-            parent_output,
+            base_output,
             ", ".join(map(lambda x: x.name, zone.snapshots)),
             status,
         )

@@ -48,6 +48,15 @@ class _Handler(zonys.core.configuration.Handler):
                 )
 
             snapshot.destroy()
+        elif isinstance(base, str):
+            parent = event.context["manager"].zones.match_one(base)
+            file_system = parent.snapshots["initial"].zfs_snapshot_handle.clone(
+                event.context["file_system_identifier"],
+            )
+
+            event.context["persistence"].update({
+                "base": str(parent.uuid),
+            })
 
         if file_system is None:
             raise zonys.core.configuration.InvalidConfigurationError(
