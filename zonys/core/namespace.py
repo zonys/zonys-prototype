@@ -75,7 +75,7 @@ name=zonys
 rcvar=${{name}}_enable
 
 : ${{zonys_enable:=NO}}
-: ${{zonys_program:=zonys}}
+: ${{zonys_program:=z3s}}
 : ${{zonys_namespaces:=}}
 
 load_rc_config ${{name}}
@@ -89,22 +89,34 @@ status_cmd="zonys_status"
 
 zonys_start()
 {{
-    ${{zonys_program}} service start ${{zonys_namespaces}}
+    for n in $zonys_namespaces
+    do
+        ${{zonys_program}} -n $n service start
+    done
 }}
 
 zonys_stop()
 {{
-    ${{zonys_program}} service stop ${{zonys_namespaces}}
+    for n in $zonys_namespaces
+    do
+        ${{zonys_program}} -n $n service stop
+    done
 }}
 
 zonys_restart()
 {{
-    ${{zonys_program}} service restart ${{zonys_namespaces}}
+    for n in $zonys_namespaces
+    do
+        ${{zonys_program}} -n $n service restart
+    done
 }}
 
 zonys_status()
 {{
-    ${{zonys_program}} service status ${{zonys_namespaces}}
+    for n in $zonys_namespaces
+    do
+        ${{zonys_program}} -n $n service status
+    done
 }}
 
 run_rc_command "$1"
@@ -137,6 +149,16 @@ class _Service:
     @namespaces.setter
     def namespaces(self, namespaces: typing.List[str]):
         zonys.core.freebsd.sysrc.update("zonys_namespaces", " ".join(namespaces))
+
+    def start(self):
+        self.__namespace.zone_manager.zones.autostart()
+
+    def stop(self):
+        for zone in self.__namespace.zone_manager.zones:
+            zone.down()
+
+    def status(self):
+        pass
 
     def enable(self):
         parent = _RC_PATH.parent
