@@ -46,6 +46,10 @@ class TestMultiKeyDict(unittest.TestCase):
         del self.instance["key1"]
         assert len(self.instance.keys()) == 0
 
+    def test_clear(self):
+        self.instance.clear()
+        assert "key1" not in self.instance
+
 
 if __name__ == "main":
     unittest.main()

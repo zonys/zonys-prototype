@@ -71,3 +71,7 @@ class MultiKeyDict(typing.Generic[K, V]):
 
     def values(self) -> typing.List[V]:
         return list(self.__data.values())
+
+    def clear(self):
+        self.__key_cliques.clear()
+        self.__data.clear()
