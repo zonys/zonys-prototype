@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.3.1
+- Fix unexpected file system identifier errors
+
 ### 0.3.0
 - Add support for double dashed configuration parameters
 - Add replace command
