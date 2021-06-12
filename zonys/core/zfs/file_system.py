@@ -61,6 +61,9 @@ class Identifier:
     def __str__(self):
         return zonys.core.zfs.SEPARATOR.join(self.segments)
 
+    def __eq__(self, value: "Identifier") -> bool:
+        return self.segments == value.segments
+
     @property
     def segments(self):
         return self.__segments
