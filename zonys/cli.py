@@ -207,6 +207,28 @@ def _zone_run(
 
 
 @_zone.command(
+    name="replace",
+    help="Replace a zone.",
+)
+@click.argument(
+    "identifier",
+)
+@click.argument(
+    "arguments",
+    nargs=-1,
+    type=click.UNPROCESSED,
+)
+@_pass_namespace
+def _zone_replace(
+    namespace: "zonys.core.namespace.Handle",
+    identifier: str,
+    arguments: typing.Tuple[typing.Any],
+):
+    configuration = _zone_handle_configuration(arguments)
+    namespace.zone_manager.zones.replace(identifier, **configuration)
+
+
+@_zone.command(
     name="deploy",
     help="Create and start a new zone.",
     context_settings=dict(
