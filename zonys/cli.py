@@ -151,6 +151,9 @@ def _zone_handle_configuration(
         else:
             first, second = arguments[i], arguments[i + 1]
 
+            if first.startswith("--"):
+                first = first[2:]
+
             configuration.update(
                 {
                     first: second,
@@ -209,6 +212,9 @@ def _zone_run(
 @_zone.command(
     name="replace",
     help="Replace a zone.",
+    context_settings=dict(
+        ignore_unknown_options=True,
+    ),
 )
 @click.argument(
     "identifier",
@@ -267,6 +273,9 @@ def _zone_undeploy(
 @_zone.command(
     name="redeploy",
     help="Undeploy a zone and deploy a new zone.",
+    context_settings=dict(
+        ignore_unknown_options=True,
+    ),
 )
 @click.argument(
     "identifier",
