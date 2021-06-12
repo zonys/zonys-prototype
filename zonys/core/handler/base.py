@@ -1,4 +1,5 @@
 import mergedeep
+import pathlib
 import ruamel
 import ruamel.yaml
 
@@ -49,7 +50,26 @@ class _Handler(zonys.core.configuration.Handler):
 
             snapshot.destroy()
         elif isinstance(base, str):
-            parent = event.context["manager"].zones.match_one(base)
+            parent = None
+
+            path = pathlib.Path(base)
+            if path.exists():
+                configuration = ruamel.yaml.YAML().load(path)
+
+                if "name" not in configuration:
+                    raise zonys.core.configuration.InvalidConfigurationError(
+                        "configuratoin does specify a name",
+                    )
+
+                identifier = configuration["name"]
+
+                if identifier not in event.context["manager"].zones:
+                    parent = event.context["manager"].zones.create(**configuration)
+                else:
+                    parent = event.context["manager"].zones.match_one(identifier)
+            else:
+                parent = event.context["manager"].zones.match_one(base)
+
             file_system = parent.snapshots["initial"].zfs_snapshot_handle.clone(
                 event.context["file_system_identifier"],
             )
