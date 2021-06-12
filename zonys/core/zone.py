@@ -110,25 +110,34 @@ class _Zones:
         file_system: "zonys.core.zfs.file_system.Handle",
     ):
         self.__manager = manager
-        self.__handles: zonys.core.collection.MultiKeyDict[
+        self.__file_system = file_system
+        self.__cached_handles: zonys.core.collection.MultiKeyDict[
             str, "_Handle"
         ] = zonys.core.collection.MultiKeyDict()
-        self.__file_system = file_system
 
+    @property
+    def __handles(self) -> zonys.core.collection.MultiKeyDict[str, "_Handle"]:
         def mount(file_system):
             if not file_system.is_mounted():
                 file_system.mount()
 
             return file_system
 
-        for handle in map(
-            lambda x: _ExistingHandle(self.__manager, mount(x)),
-            self.__file_system.children,
-        ):
+        def attach(cache, handle):
             if handle.name is not None:
-                self.__handles[(handle.name, str(handle.uuid))] = handle
+                cache[(handle.name, str(handle.uuid))] = handle
             else:
-                self.__handles[(str(handle.uuid),)] = handle
+                cache[(str(handle.uuid),)] = handle
+
+        self.__cached_handles.clear()
+
+        for child in self.__file_system.children:
+            attach(
+                self.__cached_handles,
+                _ExistingHandle(self.__manager, mount(child)),
+            )
+
+        return self.__cached_handles
 
     def __len__(self) -> int:
         return len(self.__handles.values())
@@ -190,6 +199,9 @@ class _Zones:
                 ),
             )
 
+            if configuration.get("name") is not None and configuration["name"] in self:
+                raise NameAlreadyUsedError()
+
             _uuid = uuid.uuid4()
             file_system_identifier = self.__file_system.identifier.child(str(_uuid))
 
@@ -230,9 +242,6 @@ class _Zones:
             )
 
             handle.snapshots.create("initial")
-
-            if handle.name is not None and handle.name in self:
-                raise NameAlreadyUsedError()
 
             return handle
         except:
