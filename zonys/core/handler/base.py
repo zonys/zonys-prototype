@@ -54,9 +54,11 @@ class _Handler(zonys.core.configuration.Handler):
                 event.context["file_system_identifier"],
             )
 
-            event.context["persistence"].update({
-                "base": str(parent.uuid),
-            })
+            event.context["persistence"].update(
+                {
+                    "base": str(parent.uuid),
+                }
+            )
 
         if file_system is None:
             raise zonys.core.configuration.InvalidConfigurationError(

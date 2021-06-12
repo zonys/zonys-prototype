@@ -161,9 +161,7 @@ class _Zones:
 
         return result
 
-    def match_one(
-        self, value: typing.Union[str, uuid.UUID]
-    ) -> "_Handle":
+    def match_one(self, value: typing.Union[str, uuid.UUID]) -> "_Handle":
         match_value = str(value)
 
         for handle in self:
