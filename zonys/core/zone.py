@@ -603,6 +603,7 @@ class _Snapshots:
 
     def create(self, name) -> "_Snapshot":
         temp_path = None
+        manager = None
 
         try:
             if name in self:
@@ -648,6 +649,9 @@ class _Snapshots:
                 self.__handle,
                 snapshot,
             )
+        except:
+            if manager is not None:
+                manager.rollback()
         finally:
             if temp_path is not None and temp_path.exists():
                 temp_path.unlink()
@@ -675,7 +679,37 @@ class _Snapshot:
         return self.zfs_snapshot_handle.identifier.name
 
     def destroy(self):
-        self.__zfs_snapshot_handle.destroy()
+        manager = None
+
+        try:
+            configuration = self.__zfs_snapshot_handle.path.joinpath(
+                ".zonys.yaml",
+            )
+
+            manager = zonys.core.configuration.Manager(
+                zonys.core.configuration.Target(
+                    [configuration],
+                    SCHEMA,
+                ),
+            )
+
+            manager.commit(
+                "before_destroy_snapshot",
+                snapshot=self,
+            )
+
+            self.__zfs_snapshot_handle.destroy()
+
+            manager.commit(
+                "after_destroy_snapshot",
+                zone=self.zone_handle,
+            )
+        except:
+            if manager is not None:
+                manager.rollback()
+
+            raise
+
 
     def send(self, destination: typing.Any):
         if isinstance(destination, int):
