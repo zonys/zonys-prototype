@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.4.0
+- Add support for using yaml configurations as bases
+- Fix configuration hierarchy
+
 ### 0.3.1
 - Fix unexpected file system identifier errors
 
