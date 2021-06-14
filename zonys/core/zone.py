@@ -1,9 +1,12 @@
+import copy
 import pathlib
 import shutil
 import typing
 import uuid
 
 import mergedeep
+import ruamel
+import ruamel.yaml
 
 import zonys
 import zonys.core
@@ -599,31 +602,55 @@ class _Snapshots:
         )
 
     def create(self, name) -> "_Snapshot":
-        if name in self:
-            raise AlreadyExistsError()
+        temp_path = None
 
-        temp_path = self.__file_system.path.joinpath(
-            ".zonys.yaml",
-        )
+        try:
+            if name in self:
+                raise AlreadyExistsError()
 
-        if temp_path.exists():
-            temp_path.unlink()
+            configuration = copy.deepcopy(self.__handle.configuration.merged)
 
-        shutil.copy2(
-            self.__file_system.path.parent.joinpath(
-                "{}.yaml".format(self.__handle.uuid)
-            ),
-            temp_path,
-        )
+            manager = zonys.core.configuration.Manager(
+                zonys.core.configuration.Target(
+                    [configuration],
+                    SCHEMA,
+                ),
+            )
 
-        snapshot = self.__file_system.snapshots.create(name)
+            manager.commit(
+                "before_create_snapshot",
+                zone=self,
+                name=name,
+            )
 
-        temp_path.unlink()
+            temp_path = self.__file_system.path.joinpath(
+                ".zonys.yaml",
+            )
 
-        return _Snapshot(
-            self.__handle,
-            snapshot,
-        )
+            if temp_path.exists():
+                temp_path.unlink()
+
+            with temp_path.open("w") as handle:
+                ruamel.yaml.YAML().dump(
+                    configuration,
+                    handle,
+                )
+
+            snapshot = self.__file_system.snapshots.create(name)
+
+            manager.commit(
+                "after_create_snapshot",
+                zone=self,
+                snapshot=snapshot,
+            )
+
+            return _Snapshot(
+                self.__handle,
+                snapshot,
+            )
+        finally:
+            if temp_path is not None and temp_path.exists():
+                temp_path.unlink()
 
 
 class _Snapshot:

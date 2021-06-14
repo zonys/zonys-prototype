@@ -89,6 +89,13 @@ class _Handler(zonys.core.configuration.Handler):
             }
         )
 
+    @staticmethod
+    def on_commit_before_create_snapshot(
+        event: "zonys.core.configuration.CommitEvent",
+    ):
+        if event.configuration.get("base", None) is not None:
+            del event.configuration["base"]
+
 
 SCHEMA = {
     "base": {
