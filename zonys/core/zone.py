@@ -24,26 +24,17 @@ import zonys.core.namespace
 import zonys.core.persistence
 import zonys.core.util
 
-SHARED_SCHEMA = [
+SCHEMA = [
     zonys.core.handler.variable.SCHEMA,
     zonys.core.handler.include.SCHEMA,
-]
-
-LOCAL_SCHEMA = [
-    *SHARED_SCHEMA,
     zonys.core.handler.name.SCHEMA,
     zonys.core.handler.base.SCHEMA,
     zonys.core.handler.provision.SCHEMA,
-]
-
-MERGED_SCHEMA = [
-    *SHARED_SCHEMA,
     zonys.core.handler.mount.SCHEMA,
     zonys.core.handler.temporary.SCHEMA,
     zonys.core.handler.network.SCHEMA,
     zonys.core.handler.execute.SCHEMA,
 ]
-
 
 class Error(RuntimeError):
     pass
@@ -191,11 +182,7 @@ class _Zones:
             manager = zonys.core.configuration.Manager(
                 zonys.core.configuration.Target(
                     [configuration],
-                    LOCAL_SCHEMA,
-                ),
-                zonys.core.configuration.Target(
-                    [configuration],
-                    MERGED_SCHEMA,
+                    SCHEMA,
                 ),
             )
 
@@ -360,12 +347,8 @@ class _Handle:
 
             manager = zonys.core.configuration.Manager(
                 zonys.core.configuration.Target(
-                    [self.configuration.local],
-                    LOCAL_SCHEMA,
-                ),
-                zonys.core.configuration.Target(
                     [self.configuration.merged],
-                    MERGED_SCHEMA,
+                    SCHEMA,
                 ),
             )
 
@@ -406,12 +389,8 @@ class _Handle:
 
             manager = zonys.core.configuration.Manager(
                 zonys.core.configuration.Target(
-                    [self.configuration.local],
-                    LOCAL_SCHEMA,
-                ),
-                zonys.core.configuration.Target(
                     [self.configuration.merged],
-                    MERGED_SCHEMA,
+                    SCHEMA,
                 ),
             )
 
@@ -444,12 +423,8 @@ class _Handle:
 
             manager = zonys.core.configuration.Manager(
                 zonys.core.configuration.Target(
-                    [self.configuration.local],
-                    LOCAL_SCHEMA,
-                ),
-                zonys.core.configuration.Target(
                     [self.configuration.merged],
-                    MERGED_SCHEMA,
+                    SCHEMA,
                 ),
             )
 

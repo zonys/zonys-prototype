@@ -28,13 +28,12 @@ class _Handler(zonys.core.configuration.Handler):
         if configuration is not None:
             del event.configuration["include"]
 
+            event.prepend.update(configuration)
             event.configuration.update(mergedeep.merge(
                 configuration,
                 event.configuration,
                 strategy=mergedeep.Strategy.ADDITIVE,
             ))
-            event.prepend.update(configuration)
-
 
 
 SCHEMA = {

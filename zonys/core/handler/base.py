@@ -18,14 +18,12 @@ class _Handler(zonys.core.configuration.Handler):
                 "File system already provided"
             )
 
-        base = event.configuration["base"]
-
         file_system = None
 
-        if isinstance(base, int):
+        if isinstance(event.options, int):
             snapshot = None
 
-            snapshot = event.context["file_system_identifier"].receive(base)
+            snapshot = event.context["file_system_identifier"].receive(event.options)
 
             file_system = snapshot.file_system
 
@@ -49,10 +47,10 @@ class _Handler(zonys.core.configuration.Handler):
                 )
 
             snapshot.destroy()
-        elif isinstance(base, str):
+        elif isinstance(event.options, str):
             parent = None
 
-            path = pathlib.Path(base)
+            path = pathlib.Path(event.options)
             if path.exists():
                 configuration = ruamel.yaml.YAML().load(path)
 
@@ -68,7 +66,7 @@ class _Handler(zonys.core.configuration.Handler):
                 else:
                     parent = event.context["manager"].zones.match_one(identifier)
             else:
-                parent = event.context["manager"].zones.match_one(base)
+                parent = event.context["manager"].zones.match_one(event.options)
 
             file_system = parent.snapshots["initial"].zfs_snapshot_handle.clone(
                 event.context["file_system_identifier"],
