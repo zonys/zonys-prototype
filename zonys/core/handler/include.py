@@ -1,5 +1,6 @@
 import pathlib
 
+import mergedeep
 import ruamel
 import ruamel.yaml
 
@@ -25,10 +26,15 @@ class _Handler(zonys.core.configuration.Handler):
         configuration = ruamel.yaml.YAML().load(zonys.core.util.open(event.options))
 
         if configuration is not None:
-            event.configuration.update(configuration)
+            del event.configuration["include"]
+
+            event.configuration.update(mergedeep.merge(
+                configuration,
+                event.configuration,
+                strategy=mergedeep.Strategy.ADDITIVE,
+            ))
             event.prepend.update(configuration)
 
-        del event.configuration["include"]
 
 
 SCHEMA = {
