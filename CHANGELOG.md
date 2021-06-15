@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.4.1
+- Fix snapshot destruction
+
 ### 0.4.0
 - Add support for using yaml configurations as bases
 - Fix configuration hierarchy

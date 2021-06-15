@@ -682,8 +682,10 @@ class _Snapshot:
         manager = None
 
         try:
-            configuration = self.__zfs_snapshot_handle.path.joinpath(
+            configuration = ruamel.yaml.YAML().load(
+                self.__zfs_snapshot_handle.path.joinpath(
                 ".zonys.yaml",
+                )
             )
 
             manager = zonys.core.configuration.Manager(
