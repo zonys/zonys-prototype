@@ -113,6 +113,12 @@ class Identifier:
         except:
             raise NotExistError(self)
 
+    def use(self) -> "Handle":
+        if self.exists():
+            return self.open()
+
+        return self.create()
+
     def receive(self, descriptor: int) -> "zonys.zfs.snapshot.Handle":
         if self.exists():
             raise AlreadyExistsError(self)
@@ -170,19 +176,17 @@ class Handle(zonys.core.zfs.dataset.Handle):
     def unmount(self):
         self._descriptor.umount()
 
+    def rename(self, identifier: Identifier) -> "Handle":
+        self._descriptor.rename(str(identifier))
+        return identifier.open()
+
     def destroy(self):
         if self.is_mounted():
             self.unmount()
 
         self.snapshots.destroy_all()
+        self.children.destroy_all()
         self._descriptor.delete()
-
-    def rename(
-        self,
-        identifier: "Identifier",
-    ) -> "Handle":
-        self._descriptor.rename(str(identifier))
-        return identifier.open()
 
     def jail(self, jail):
         command = [
@@ -231,6 +235,10 @@ class Children:
 
     def __getitem__(self, name):
         return self.__identifier.child(name).open()
+
+    def destroy_all(self):
+        for child in self:
+            child.destroy()
 
     def create(self, name):
         return self.__identifier.child(name).create()
