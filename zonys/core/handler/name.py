@@ -14,8 +14,6 @@ class _Handler(zonys.core.configuration.Handler):
             }
         )
 
-        del event.configuration["name"]
-
 
 SCHEMA = {
     "name": {

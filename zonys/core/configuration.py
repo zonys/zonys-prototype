@@ -1,5 +1,6 @@
 import collections
 import os
+import typing
 
 import cerberus
 import toolz
@@ -50,81 +51,68 @@ class ValidationContextHandlerDetail:
         return self.__configuration
 
 
-class Target:
-    def __init__(self, configurations, schemas):
-        self.__configurations = configurations
-        self.__schemas = schemas
-
-    @property
-    def configurations(self):
-        return self.__configurations
-
-    @property
-    def schemas(self):
-        return self.__schemas
-
-
 class Manager:
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         self.__rollback_methods = collections.OrderedDict()
         self.__attached_handlers = set()
         self.__commit_handlers = []
         self.__variables = {}
 
-        def handle_configuration(configuration, schemas):
-            current_configuration = {
-                **configuration,
-            }
+        for (key, value) in kwargs.items():
+            setattr(self, key, value)
 
-            for schema in schemas:
-                validator = Validator(
-                    allow_unknown=True,
-                    handler_details=[],
-                )
+    def read(self, schemas, configuration):
+        current_configuration = {
+            **configuration,
+        }
 
-                if not validator.validate(current_configuration, schema):
-                    raise InvalidConfigurationError(validator.errors)
+        for schema in schemas:
+            validator = Validator(
+                allow_unknown=True,
+                handler_details=[]
+            )
 
-                for handler_detail in validator.handler_details:
-                    handler = handler_detail.handler
-                    if handler_detail.handler not in self.__attached_handlers:
-                        handler_detail.handler.on_attach(
-                            AttachEvent(
-                                self,
-                                handler_detail.configuration,
-                                configuration,
-                            )
-                        )
+            if not validator.validate(current_configuration, schema):
+                raise InvalidConfigurationError(validator.errors)
 
-                        self.__attached_handlers.add(handler_detail.handler)
-
-                    prepend_event = PrependConfigurationEvent(
-                        self,
-                        handler_detail.configuration,
-                        configuration,
-                    )
-                    handler.on_prepend_configuration(prepend_event)
-                    handle_configuration(prepend_event.prepend, schemas)
-
-                    self.__commit_handlers.append(
-                        (
-                            handler,
+            for handler_detail in validator.handler_details:
+                handler = handler_detail.handler
+                if handler_detail.handler not in self.__attached_handlers:
+                    handler_detail.handler.on_attach(
+                        AttachEvent(
+                            self,
                             handler_detail.configuration,
                             configuration,
                         )
                     )
 
-                    append_event = AppendConfigurationEvent(
-                        self,
+                    self.__attached_handlers.add(handler_detail.handler)
+
+                handler.before_configuration(BeforeConfigurationEvent(
+                    self,
+                    handler_detail.configuration,
+                    configuration,
+                    schemas,
+                ))
+
+                self.__commit_handlers.append(
+                    (
+                        handler,
                         handler_detail.configuration,
                         configuration,
                     )
-                    handler.on_append_configuration(append_event)
-                    handle_configuration(append_event.append, schemas)
+                )
 
-        for target in args:
-            for configuration in target.configurations:
-                handle_configuration(configuration, target.schemas)
+                handler.after_configuration(AfterConfigurationEvent(
+                    self,
+                    handler_detail.configuration,
+                    configuration,
+                    schemas,
+                ))
+
+    @property
+    def commit_handlers(self) -> typing.List["Handler"]:
+        return self.__commit_handlers
 
     @property
     def variables(self):
@@ -262,29 +250,21 @@ class RollbackEvent(TransactionEvent):
 
 
 class ConfigurationEvent(Event):
+    def __init__(self, manager, options, configuration, schemas):
+        super().__init__(manager, options, configuration)
+        self.__schemas = schemas
+
+    @property
+    def schemas(self):
+        return self.__schemas
+
+
+class BeforeConfigurationEvent(ConfigurationEvent):
     pass
 
 
-class PrependConfigurationEvent(ConfigurationEvent):
-    def __init__(self, manager, options, configuration):
-        super().__init__(manager, options, configuration)
-
-        self.__prepend = {}
-
-    @property
-    def prepend(self):
-        return self.__prepend
-
-
-class AppendConfigurationEvent(ConfigurationEvent):
-    def __init__(self, manager, options, configuration):
-        super().__init__(manager, options, configuration)
-
-        self.__append = {}
-
-    @property
-    def append(self):
-        return self.__append
+class AfterConfigurationEvent(ConfigurationEvent):
+    pass
 
 
 class NormalizeEvent(Event):
@@ -313,9 +293,13 @@ class Handler:
         pass
 
     @staticmethod
-    def on_prepend_configuration(event):
+    def before_configuration(
+        event: "BeforeConfigurationEvent",
+    ):
         pass
 
     @staticmethod
-    def on_append_configuration(event):
+    def after_configuration(
+        event: "AfterConfigurationEvent",
+    ):
         pass

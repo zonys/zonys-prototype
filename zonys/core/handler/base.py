@@ -1,14 +1,55 @@
-import mergedeep
+import uuid
 import pathlib
+
+import mergedeep
 import ruamel
 import ruamel.yaml
 
 import zonys
 import zonys.core
+import zonys.core.zfs
+import zonys.core.zfs.file_system
 import zonys.core.configuration
 
 
 class _Handler(zonys.core.configuration.Handler):
+    @staticmethod
+    def before_configuration(
+        event: "zonys.core.configuration.BeforeConfigurationEvent",
+    ):
+        if isinstance(event.options, int):
+            identifier = zonys.core.zfs.file_system.Identifier(
+                *event.manager.namespace.zone_manager.path.joinpath(
+                    str(uuid.uuid4()),
+                ).parts[1:]
+            )
+
+            snapshot = identifier.receive(event.options)
+
+            path = snapshot.path.joinpath(".zonys.yaml")
+            if path.exists():
+                configuration = dict(ruamel.yaml.YAML().load(path))
+
+                event.manager.read(event.schemas, {
+                    **configuration,
+                    "provision": [],
+                })
+
+                event.configuration.update(
+                    mergedeep.merge(
+                        configuration,
+                        event.configuration,
+                        strategy=mergedeep.Strategy.ADDITIVE,
+                    )
+                )
+
+            file_system = snapshot.file_system
+            snapshot.destroy()
+
+            event.configuration.update({
+                "base": file_system
+            })
+
     @staticmethod
     def on_commit_before_create_zone(
         event: "zonys.core.configuration.CommitEvent",
@@ -20,33 +61,19 @@ class _Handler(zonys.core.configuration.Handler):
 
         file_system = None
 
-        if isinstance(event.options, int):
-            snapshot = None
-
-            snapshot = event.context["file_system_identifier"].receive(event.options)
-
-            file_system = snapshot.file_system
-
-            path = snapshot.path.joinpath(".zonys.yaml")
-            if path.exists():
-                configuration = dict(ruamel.yaml.YAML().load(path))
-
-                event.context["persistence"].update(
-                    mergedeep.merge(
-                        configuration,
-                        event.context["persistence"],
-                        strategy=mergedeep.Strategy.ADDITIVE,
-                    )
+        if "base" in event.configuration and isinstance(
+            event.configuration["base"],
+            zonys.core.zfs.file_system.Handle,
+        ):
+            try:
+                file_system = event.configuration["base"].rename(
+                    event.context["file_system_identifier"]
                 )
-                event.configuration.update(
-                    mergedeep.merge(
-                        configuration.get("local", {}),
-                        event.configuration,
-                        strategy=mergedeep.Strategy.ADDITIVE,
-                    )
-                )
+            except:
+                event.configuration["base"].destroy()
+                raise
 
-            snapshot.destroy()
+            del event.configuration["base"]
         elif isinstance(event.options, str):
             parent = None
 
@@ -56,7 +83,7 @@ class _Handler(zonys.core.configuration.Handler):
 
                 if "name" not in configuration:
                     raise zonys.core.configuration.InvalidConfigurationError(
-                        "configuratoin does specify a name",
+                        "configuration does not specify a name",
                     )
 
                 identifier = configuration["name"]

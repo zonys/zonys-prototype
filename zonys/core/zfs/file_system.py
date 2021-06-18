@@ -177,6 +177,13 @@ class Handle(zonys.core.zfs.dataset.Handle):
         self.snapshots.destroy_all()
         self._descriptor.delete()
 
+    def rename(
+        self,
+        identifier: "Identifier",
+    ) -> "Handle":
+        self._descriptor.rename(str(identifier))
+        return identifier.open()
+
     def jail(self, jail):
         command = [
             "zfs",

@@ -27,11 +27,11 @@ import zonys.core.namespace
 import zonys.core.persistence
 import zonys.core.util
 
-SCHEMA = [
+SCHEMAS = [
     zonys.core.handler.variable.SCHEMA,
     zonys.core.handler.include.SCHEMA,
-    zonys.core.handler.name.SCHEMA,
     zonys.core.handler.base.SCHEMA,
+    zonys.core.handler.name.SCHEMA,
     zonys.core.handler.provision.SCHEMA,
     zonys.core.handler.mount.SCHEMA,
     zonys.core.handler.temporary.SCHEMA,
@@ -91,6 +91,10 @@ class Manager:
     @property
     def namespace(self) -> "zonys.core.namespace.Handle":
         return self.__namespace
+
+    @property
+    def path(self) -> pathlib.Path:
+        return self.__file_system.path
 
     @property
     def zones(self) -> "_Zones":
@@ -182,15 +186,8 @@ class _Zones:
         file_system_identifier = None
 
         try:
-            manager = zonys.core.configuration.Manager(
-                zonys.core.configuration.Target(
-                    [configuration],
-                    SCHEMA,
-                ),
-            )
-
-            if configuration.get("name") is not None and configuration["name"] in self:
-                raise NameAlreadyUsedError()
+            manager = zonys.core.configuration.Manager(namespace=self.__manager.namespace)
+            manager.read(SCHEMAS, configuration)
 
             _uuid = uuid.uuid4()
             file_system_identifier = self.__file_system.identifier.child(str(_uuid))
@@ -218,6 +215,9 @@ class _Zones:
 
             if not file_system.is_mounted():
                 file_system.mount()
+
+            if configuration.get("name") is not None and configuration["name"] in self:
+                raise NameAlreadyUsedError()
 
             handle = _CreatedHandle(
                 self.__manager,
@@ -348,12 +348,8 @@ class _Handle:
             if self.is_running():
                 raise AlreadyRunningError(self)
 
-            manager = zonys.core.configuration.Manager(
-                zonys.core.configuration.Target(
-                    [self.configuration.merged],
-                    SCHEMA,
-                ),
-            )
+            manager = zonys.core.configuration.Manager(namespace=self.__manager.namespace)
+            manager.read(SCHEMAS, self.configuration.merged)
 
             jail_configuration = manager.commit(
                 "before_start_zone",
@@ -390,12 +386,8 @@ class _Handle:
             if not self.is_running():
                 raise NotRunningError(self)
 
-            manager = zonys.core.configuration.Manager(
-                zonys.core.configuration.Target(
-                    [self.configuration.merged],
-                    SCHEMA,
-                ),
-            )
+            manager = zonys.core.configuration.Manager(namespace=self.__manager.namespace)
+            manager.read(SCHEMAS, self.configuration.merged)
 
             jail_handle = self.__jail_identifier.open()
 
@@ -424,12 +416,8 @@ class _Handle:
             if self.is_running():
                 raise RunningError(self)
 
-            manager = zonys.core.configuration.Manager(
-                zonys.core.configuration.Target(
-                    [self.configuration.merged],
-                    SCHEMA,
-                ),
-            )
+            manager = zonys.core.configuration.Manager(namespace=self.__manager.namespace)
+            manager.read(SCHEMAS, self.configuration.merged)
 
             manager.commit(
                 "before_destroy_zone",
@@ -566,7 +554,7 @@ class _Configuration:
     def merged(self) -> typing.Mapping[typing.Any, typing.Any]:
         result: typing.Dict[typing.Any, typing.Any] = {}
 
-        for entry in self.entities:
+        for entry in reversed(self.entities):
             result = mergedeep.merge(
                 result,
                 entry,
@@ -578,7 +566,9 @@ class _Configuration:
 
 class _Snapshots:
     def __init__(
-        self, handle: "_Handle", file_system: "zonys.core.zfs.file_system.Handle"
+        self,
+        handle: "_Handle",
+        file_system: "zonys.core.zfs.file_system.Handle",
     ):
         self.__handle = handle
         self.__file_system = file_system
@@ -611,16 +601,12 @@ class _Snapshots:
 
             configuration = copy.deepcopy(self.__handle.configuration.merged)
 
-            manager = zonys.core.configuration.Manager(
-                zonys.core.configuration.Target(
-                    [configuration],
-                    SCHEMA,
-                ),
-            )
+            manager = zonys.core.configuration.Manager(namespace=self.__handle.manager.namespace)
+            manager.read(SCHEMAS, configuration)
 
             manager.commit(
                 "before_create_snapshot",
-                zone=self,
+                zone=self.__handle,
                 name=name,
             )
 
@@ -652,6 +638,8 @@ class _Snapshots:
         except:
             if manager is not None:
                 manager.rollback()
+
+            raise
         finally:
             if temp_path is not None and temp_path.exists():
                 temp_path.unlink()
@@ -688,12 +676,8 @@ class _Snapshot:
                 )
             )
 
-            manager = zonys.core.configuration.Manager(
-                zonys.core.configuration.Target(
-                    [configuration],
-                    SCHEMA,
-                ),
-            )
+            manager = zonys.core.configuration.Manager(namespace=self.zone_handle.manager.namespace)
+            manager.read(SCHEMAS, configuration)
 
             manager.commit(
                 "before_destroy_snapshot",
