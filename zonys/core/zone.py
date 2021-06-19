@@ -659,6 +659,10 @@ class _Snapshot:
         return self.__zone_handle
 
     @property
+    def zone(self) -> "_Handle":
+        return self.__zone_handle
+
+    @property
     def zfs_snapshot_handle(self) -> "zonys.core.zfs.snapshot.Handle":
         return self.__zfs_snapshot_handle
 
