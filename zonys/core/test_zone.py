@@ -63,7 +63,7 @@ class _TestZone(unittest.TestCase):
 
         cls._snapshot_child = cls._namespace.zone_manager.zones.create(
             base=str(cls._base.uuid),
-            name="snapshot_child",
+            name="snapshot-child",
         )
 
         with tempfile.TemporaryFile() as handle:
@@ -73,7 +73,7 @@ class _TestZone(unittest.TestCase):
                 base=str(cls._base.uuid),
             ).redeploy(
                 base=handle.fileno(),
-                name="redeploy_child",
+                name="redeploy-child",
             )
 
     @classmethod
@@ -86,11 +86,17 @@ class _TestZone(unittest.TestCase):
     def test_base_is_running(self):
         self.assertTrue(self._base.is_running())
 
+    def test_base_name(self):
+        self.assertEqual(self._base.name, "base")
+
     def test_base_file_system_structure(self):
         self._test_file_system_structure(self._base.path)
 
     def test_snapshot_child_base(self):
         self.assertEqual(str(self._snapshot_child.base.zone.uuid), str(self._base.uuid))
+
+    def test_snapshot_child_name(self):
+        self.assertEqual(self._snapshot_child.name, "snapshot-child")
 
     def test_snapshot_child_is_not_running(self):
         self.assertFalse(self._snapshot_child.is_running())
@@ -100,6 +106,9 @@ class _TestZone(unittest.TestCase):
 
     def test_redeploy_child_base(self):
         self.assertIsNone(self._redeploy_child.base)
+
+    def test_redeploy_child_name(self):
+        self.assertEqual(self._redeploy_child.name, "redeploy-child")
 
     def test_redeploy_child_is_running(self):
         self.assertTrue(self._redeploy_child.is_running())
