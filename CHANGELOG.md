@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.5.0
+- Rewrite configuration management
+- Add zone tests
+- Fix symlink creation
+
 ### 0.4.1
 - Fix snapshot destruction
 
