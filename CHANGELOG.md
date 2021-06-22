@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.5.1
+- Fix path/nullfs mounts
+
 ### 0.5.0
 - Rewrite configuration management
 - Add zone tests

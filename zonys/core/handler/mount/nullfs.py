@@ -20,7 +20,7 @@ class _Handler(zonys.core.configuration.Handler):
                 "destination path must be absolute",
             )
 
-        destination = event.context["zone"].file_system.path.joinpath(
+        destination = event.context["zone"].path.joinpath(
             *destination.parts[1:]
         )
 
@@ -82,7 +82,7 @@ def _dict_schema(key: str):
                         "type": "string",
                         "required": True,
                     },
-                    "read_only": {
+                    "readOnly": {
                         "type": "boolean",
                     },
                 },
