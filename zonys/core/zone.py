@@ -17,6 +17,7 @@ import zonys.core.handler
 import zonys.core.handler.base
 import zonys.core.handler.execute
 import zonys.core.handler.include
+import zonys.core.handler.jail
 import zonys.core.handler.mount
 import zonys.core.handler.name
 import zonys.core.handler.network
@@ -37,6 +38,7 @@ SCHEMAS = [
     zonys.core.handler.temporary.SCHEMA,
     zonys.core.handler.network.SCHEMA,
     zonys.core.handler.execute.SCHEMA,
+    zonys.core.handler.jail.SCHEMA,
 ]
 
 class Error(RuntimeError):

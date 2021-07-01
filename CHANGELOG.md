@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.6.1
+- Fix missing directive
+
 ### 0.6.0
 - Add jail configuration directive for raw options
 - Add devices mountpoint for temporary jail handles
