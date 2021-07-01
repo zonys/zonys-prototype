@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.6.0
+- Add jail configuration directive for raw options
+- Add devices mountpoint for temporary jail handles
+- Fix readOnly directive for path/nullfs mounts
+
 ### 0.5.1
 - Fix path/nullfs mounts
 

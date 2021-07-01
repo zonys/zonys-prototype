@@ -29,7 +29,7 @@ class _Handler(zonys.core.configuration.Handler):
                 "mountpoint": zonys.core.freebsd.mount.nullfs.Mountpoint(
                     event.options["source"],
                     destination,
-                    event.options.get("read_only", True),
+                    event.options.get("readOnly", True),
                 ),
             }
         )

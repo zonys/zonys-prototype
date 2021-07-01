@@ -6,6 +6,12 @@ import subprocess
 import tempfile
 import typing
 
+import zonys
+import zonys.core
+import zonys.core.freebsd
+import zonys.core.freebsd.mount
+import zonys.core.freebsd.mount.devfs
+
 
 class Error(RuntimeError):
     pass
@@ -76,6 +82,7 @@ class Identifier:
                     "exec.clean": None,
                     **kwargs,
                     "name": self.name,
+                    "allow.raw_sockets": 1,
                 }.items(),
             )
         )
@@ -154,10 +161,12 @@ class Handle:
 def temporary(
     name: str,
     path: pathlib.Path,
+    **kwargs,
 ):
     resolv_conf_path = path.joinpath("etc", "resolv.conf")
     temp_handle = None
     identifier = Identifier(name)
+    devices_handle = None
 
     jail = None
 
@@ -174,9 +183,21 @@ def temporary(
 
         shutil.copyfile(pathlib.Path("/", "etc", "resolv.conf"), resolv_conf_path)
 
+        mountpoint = zonys.core.freebsd.mount.devfs.Mountpoint(path.joinpath("dev"))
+        if mountpoint.exists():
+            devices_handle = mountpoint.open()
+        else:
+            devices_handle = mountpoint.mount()
+
+        devices_handle.rules.unhide_all()
+
         jail = identifier.create(
             path=path,
             ip4="inherit",
+            **{
+                "allow.sysvipc": True,
+            },
+            **kwargs,
         )
 
         jail.execute("/etc/rc.d/ldconfig start")
@@ -186,6 +207,9 @@ def temporary(
         if jail is not None:
             jail.execute("/etc/rc.d/ldconfig stop")
             jail.destroy()
+
+        if devices_handle is not None:
+           devices_handle.unmount()
 
         if temp_handle is not None:
             with resolv_conf_path.open("wb") as handle:
