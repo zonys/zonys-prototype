@@ -275,7 +275,7 @@ class _Zones:
             if zone.auto_start:
                 zone.up()
 
-    def replace(self, identifier: str, **kwargs) -> "_Handle":
+    def recreate(self, identifier: str, **kwargs) -> "_Handle":
         self.match_one(identifier).destroy()
         return self.create(**kwargs)
 

@@ -210,8 +210,8 @@ def _zone_run(
 
 
 @_zone.command(
-    name="replace",
-    help="Replace a zone.",
+    name="recreate",
+    help="Recreate a zone.",
     context_settings=dict(
         ignore_unknown_options=True,
     ),
@@ -225,13 +225,13 @@ def _zone_run(
     type=click.UNPROCESSED,
 )
 @_pass_namespace
-def _zone_replace(
+def _zone_recreate(
     namespace: "zonys.core.namespace.Handle",
     identifier: str,
     arguments: typing.Tuple[typing.Any],
 ):
     configuration = _zone_handle_configuration(arguments)
-    namespace.zone_manager.zones.replace(identifier, **configuration)
+    namespace.zone_manager.zones.recreate(identifier, **configuration)
 
 
 @_zone.command(
