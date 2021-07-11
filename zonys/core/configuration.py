@@ -5,6 +5,10 @@ import typing
 import cerberus
 import toolz
 
+import zonys
+import zonys.core
+import zonys.core.collection
+
 
 class Error(RuntimeError):
     pass
@@ -35,6 +39,20 @@ class Validator(cerberus.Validator):
             and len(self.errors) == 0
         ):
             self.handler_details.append(ValidationContextHandlerDetail(handler, value))
+
+
+class VariableAccessor:
+    def __init__(self, data: typing.Any):
+        self.__data = data
+
+    def __getattr__(self, name: typing.Any) -> typing.Any:
+        if self.__data is None:
+            return None
+
+        return VariableAccessor(self.__data.get(name))
+
+    def __str__(self) -> str:
+        return str(self.__data)
 
 
 class ValidationContextHandlerDetail:
@@ -149,7 +167,10 @@ class Manager:
                     result = value.format(
                         env=dict(os.environ),
                         environment=dict(os.environ),
-                        **self.__variables
+                        **toolz.valmap(
+                            VariableAccessor,
+                            self.__variables,
+                        ),
                     )
                 else:
                     result = value
