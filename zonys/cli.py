@@ -448,8 +448,31 @@ def _zone_path(
 
 
 @_zone.command(
+    name="execute",
+    help="Execute a command in a zone.",
+)
+@click.argument(
+    "identifier",
+)
+@click.argument(
+    "command",
+)
+@_pass_namespace
+def _zone_console(
+    namespace: "zonys.core.namespace.Handle",
+    identifier: str,
+    command: str,
+):
+    namespace.zone_manager.zones.match(identifier)[0].execute(
+        command,
+        stdin=sys.stdin,
+        stdout=sys.stdout,
+        stderr=sys.stderr,
+    )
+
+@_zone.command(
     name="console",
-    help="Starts the console of a zone.",
+    help="Start the console of a zone.",
 )
 @click.argument(
     "identifier",
