@@ -62,7 +62,6 @@ class Identifier:
         return False
 
     def create(self, **kwargs):
-        print(kwargs)
         if self.exists():
             raise AlreadyExistsError(self)
 
