@@ -432,5 +432,39 @@ def _zone_send(
     namespace.zone_manager.zones.match(identifier)[0].send(target)
 
 
+@_zone.command(
+    name="path",
+    help="Print the path of a zone.",
+)
+@click.argument(
+    "identifier",
+)
+@_pass_namespace
+def _zone_path(
+    namespace: "zonys.core.namespace.Handle",
+    identifier: str,
+):
+    print(namespace.zone_manager.zones.match(identifier)[0].path)
+
+
+@_zone.command(
+    name="console",
+    help="Starts the console of a zone.",
+)
+@click.argument(
+    "identifier",
+)
+@_pass_namespace
+def _zone_console(
+    namespace: "zonys.core.namespace.Handle",
+    identifier: str,
+):
+    namespace.zone_manager.zones.match(identifier)[0].console(
+        stdin=sys.stdin,
+        stdout=sys.stdout,
+        stderr=sys.stderr,
+    )
+
+
 if __name__ == "__main__":
     main()

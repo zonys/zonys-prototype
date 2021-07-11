@@ -123,7 +123,13 @@ class Handle:
     def name(self):
         return self.identifier.name
 
-    def execute(self, command):
+    def execute(
+        self,
+        command,
+        stderr=None,
+        stdin=None,
+        stdout=None,
+    ):
         if isinstance(command, str):
             command = [command]
         elif not isinstance(command, list):
@@ -136,11 +142,21 @@ class Handle:
             *" ".join(command).split(" "),  # wtf
         ]
 
+        flags = {}
+
+        if stdout is not None:
+            flags["stdout"] = stdout
+
+        if stdin is not None:
+            flags["stdin"] = stdin
+
+        if stderr is not None:
+            flags["stderr"] = stderr
+
         subprocess.run(
             command,
             check=True,
-            # stdout=subprocess.DEVNULL,
-            # stderr=subprocess.DEVNULL,
+            **flags,
         )
 
     def destroy(self):

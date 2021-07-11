@@ -474,6 +474,27 @@ class _Handle:
             if temp is not None:
                 temp.destroy()
 
+    def execute(
+        self,
+        command: typing.List[str],
+        stdin=int,
+        stdout=int,
+        stderr=int,
+    ):
+        if not self.is_running():
+            raise NotRunningError()
+
+        handle = self.__jail_identifier.open()
+        handle.execute(command, stdin=stdin, stdout=stdout, stderr=stderr)
+
+    def console(
+        self,
+        stdin=int,
+        stdout=int,
+        stderr=int,
+    ):
+        return self.execute("/bin/sh", stdin=stdin, stdout=stdout, stderr=stderr)
+
 
 class _CreatedHandle(_Handle):
     def __init__(
