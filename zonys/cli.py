@@ -456,15 +456,16 @@ def _zone_path(
 )
 @click.argument(
     "command",
+    nargs=-1,
 )
 @_pass_namespace
 def _zone_console(
     namespace: "zonys.core.namespace.Handle",
     identifier: str,
-    command: str,
+    command: typing.List[str],
 ):
     namespace.zone_manager.zones.match(identifier)[0].execute(
-        command,
+        *command,
         stdin=sys.stdin,
         stdout=sys.stdout,
         stderr=sys.stderr,
