@@ -85,10 +85,7 @@ class Manager:
         }
 
         for schema in schemas:
-            validator = Validator(
-                allow_unknown=True,
-                handler_details=[]
-            )
+            validator = Validator(allow_unknown=True, handler_details=[])
 
             if not validator.validate(current_configuration, schema):
                 raise InvalidConfigurationError(validator.errors)
@@ -106,12 +103,14 @@ class Manager:
 
                     self.__attached_handlers.add(handler_detail.handler)
 
-                handler.before_configuration(BeforeConfigurationEvent(
-                    self,
-                    handler_detail.configuration,
-                    configuration,
-                    schemas,
-                ))
+                handler.before_configuration(
+                    BeforeConfigurationEvent(
+                        self,
+                        handler_detail.configuration,
+                        configuration,
+                        schemas,
+                    )
+                )
 
                 self.__commit_handlers.append(
                     (
@@ -121,12 +120,14 @@ class Manager:
                     )
                 )
 
-                handler.after_configuration(AfterConfigurationEvent(
-                    self,
-                    handler_detail.configuration,
-                    configuration,
-                    schemas,
-                ))
+                handler.after_configuration(
+                    AfterConfigurationEvent(
+                        self,
+                        handler_detail.configuration,
+                        configuration,
+                        schemas,
+                    )
+                )
 
     @property
     def commit_handlers(self) -> typing.List["Handler"]:

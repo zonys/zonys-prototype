@@ -225,7 +225,7 @@ def temporary(
             jail.destroy()
 
         if devices_handle is not None:
-           devices_handle.unmount()
+            devices_handle.unmount()
 
         if temp_handle is not None:
             with resolv_conf_path.open("wb") as handle:

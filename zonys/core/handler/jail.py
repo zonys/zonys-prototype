@@ -11,9 +11,7 @@ class _Handler(zonys.core.configuration.Handler):
     def on_commit_before_start_zone(
         event: "zonys.core.configuration.CommitEvent",
     ):
-        event.context["jail_configuration"].update(
-            **event.options
-        )
+        event.context["jail_configuration"].update(**event.options)
 
 
 SCHEMA = {

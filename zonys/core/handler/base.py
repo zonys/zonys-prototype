@@ -30,10 +30,13 @@ class _Handler(zonys.core.configuration.Handler):
             if path.exists():
                 configuration = dict(ruamel.yaml.YAML().load(path))
 
-                event.manager.read(event.schemas, {
-                    **configuration,
-                    "provision": [],
-                })
+                event.manager.read(
+                    event.schemas,
+                    {
+                        **configuration,
+                        "provision": [],
+                    },
+                )
 
                 event.configuration.update(
                     mergedeep.merge(
@@ -46,9 +49,7 @@ class _Handler(zonys.core.configuration.Handler):
             file_system = snapshot.file_system
             snapshot.destroy()
 
-            event.configuration.update({
-                "base": file_system
-            })
+            event.configuration.update({"base": file_system})
 
     @staticmethod
     def on_commit_before_create_zone(

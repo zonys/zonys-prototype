@@ -20,9 +20,7 @@ class _Handler(zonys.core.configuration.Handler):
                 "destination path must be absolute",
             )
 
-        destination = event.context["zone"].path.joinpath(
-            *destination.parts[1:]
-        )
+        destination = event.context["zone"].path.joinpath(*destination.parts[1:])
 
         event.normalized.update(
             {

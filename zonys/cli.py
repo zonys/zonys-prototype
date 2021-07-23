@@ -471,6 +471,7 @@ def _zone_console(
         stderr=sys.stderr,
     )
 
+
 @_zone.command(
     name="console",
     help="Start the console of a zone.",

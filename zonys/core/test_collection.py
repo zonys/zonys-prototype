@@ -65,5 +65,5 @@ class TestMultiKeyDict(unittest.TestCase):
         assert "key1" not in self.instance
 
 
-if __name__ == "main": # pragma: no cover
+if __name__ == "main":  # pragma: no cover
     unittest.main()

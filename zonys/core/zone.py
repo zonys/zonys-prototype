@@ -41,6 +41,7 @@ SCHEMAS = [
     zonys.core.handler.jail.SCHEMA,
 ]
 
+
 class Error(RuntimeError):
     pass
 
@@ -188,7 +189,9 @@ class _Zones:
         file_system_identifier = None
 
         try:
-            manager = zonys.core.configuration.Manager(namespace=self.__manager.namespace)
+            manager = zonys.core.configuration.Manager(
+                namespace=self.__manager.namespace
+            )
             manager.read(SCHEMAS, configuration)
 
             _uuid = uuid.uuid4()
@@ -350,7 +353,9 @@ class _Handle:
             if self.is_running():
                 raise AlreadyRunningError(self)
 
-            manager = zonys.core.configuration.Manager(namespace=self.__manager.namespace)
+            manager = zonys.core.configuration.Manager(
+                namespace=self.__manager.namespace
+            )
             manager.read(SCHEMAS, self.configuration.merged)
 
             jail_configuration = manager.commit(
@@ -388,7 +393,9 @@ class _Handle:
             if not self.is_running():
                 raise NotRunningError(self)
 
-            manager = zonys.core.configuration.Manager(namespace=self.__manager.namespace)
+            manager = zonys.core.configuration.Manager(
+                namespace=self.__manager.namespace
+            )
             manager.read(SCHEMAS, self.configuration.merged)
 
             jail_handle = self.__jail_identifier.open()
@@ -418,7 +425,9 @@ class _Handle:
             if self.is_running():
                 raise RunningError(self)
 
-            manager = zonys.core.configuration.Manager(namespace=self.__manager.namespace)
+            manager = zonys.core.configuration.Manager(
+                namespace=self.__manager.namespace
+            )
             manager.read(SCHEMAS, self.configuration.merged)
 
             manager.commit(
@@ -624,7 +633,9 @@ class _Snapshots:
 
             configuration = copy.deepcopy(self.__handle.configuration.merged)
 
-            manager = zonys.core.configuration.Manager(namespace=self.__handle.manager.namespace)
+            manager = zonys.core.configuration.Manager(
+                namespace=self.__handle.manager.namespace
+            )
             manager.read(SCHEMAS, configuration)
 
             manager.commit(
@@ -699,11 +710,13 @@ class _Snapshot:
         try:
             configuration = ruamel.yaml.YAML().load(
                 self.__zfs_snapshot_handle.path.joinpath(
-                ".zonys.yaml",
+                    ".zonys.yaml",
                 )
             )
 
-            manager = zonys.core.configuration.Manager(namespace=self.zone_handle.manager.namespace)
+            manager = zonys.core.configuration.Manager(
+                namespace=self.zone_handle.manager.namespace
+            )
             manager.read(SCHEMAS, configuration)
 
             manager.commit(
@@ -722,7 +735,6 @@ class _Snapshot:
                 manager.rollback()
 
             raise
-
 
     def send(self, destination: typing.Any):
         if isinstance(destination, int):

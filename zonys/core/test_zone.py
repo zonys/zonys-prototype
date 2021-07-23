@@ -10,28 +10,35 @@ import zonys.core.zone
 import zonys.core.zfs
 import zonys.core.zfs.file_system
 
+
 class _TestZone(unittest.TestCase):
     def _test_file_system_structure(self, root: pathlib.Path):
-        self.assertTrue(all([
-            root.joinpath("directory").is_dir(),
-            root.joinpath("file").read_text() == "hello-world",
-            root.joinpath("file2").read_text() == "helloworld",
-            root.joinpath("link").is_symlink(),
-            root.joinpath("link").samefile(root.joinpath("file")),
-        ]))
+        self.assertTrue(
+            all(
+                [
+                    root.joinpath("directory").is_dir(),
+                    root.joinpath("file").read_text() == "hello-world",
+                    root.joinpath("file2").read_text() == "helloworld",
+                    root.joinpath("link").is_symlink(),
+                    root.joinpath("link").samefile(root.joinpath("file")),
+                ]
+            )
+        )
 
     @classmethod
     def setUpClass(cls):
-        cls._file_system = zonys.core.zfs.file_system.Identifier([
-            "zroot",
-            "zonys",
-            "test",
-            str(uuid.uuid4()),
-        ]).use()
+        cls._file_system = zonys.core.zfs.file_system.Identifier(
+            [
+                "zroot",
+                "zonys",
+                "test",
+                str(uuid.uuid4()),
+            ]
+        ).use()
 
         cls._namespace = zonys.core.namespace.Handle(cls._file_system)
 
-        cls._base= cls._namespace.zone_manager.zones.deploy(
+        cls._base = cls._namespace.zone_manager.zones.deploy(
             name="base",
             provision=[
                 {
@@ -116,5 +123,6 @@ class _TestZone(unittest.TestCase):
     def test_redeploy_child_file_system_structure(self):
         self._test_file_system_structure(self._redeploy_child.path)
 
-if __name__ == "main": # pragma: no cover
+
+if __name__ == "main":  # pragma: no cover
     unittest.main()

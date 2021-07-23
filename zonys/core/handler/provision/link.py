@@ -19,9 +19,7 @@ class _Handler(zonys.core.configuration.Handler):
                 "source path must be absolute",
             )
 
-        source = pathlib.Path(
-            *source.parts[1:]
-        )
+        source = pathlib.Path(*source.parts[1:])
 
         destination = pathlib.Path(event.options["destination"])
 
