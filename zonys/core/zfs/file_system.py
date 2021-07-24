@@ -173,8 +173,8 @@ class Handle(zonys.core.zfs.dataset.Handle):
     def mount(self):
         self._descriptor.mount()
 
-    def unmount(self):
-        self._descriptor.umount()
+    def unmount(self, force: bool = False):
+        self._descriptor.umount(force)
 
     def rename(self, identifier: Identifier) -> "Handle":
         self._descriptor.rename(str(identifier))
@@ -182,7 +182,7 @@ class Handle(zonys.core.zfs.dataset.Handle):
 
     def destroy(self):
         if self.is_mounted():
-            self.unmount()
+            self.unmount(True)
 
         self.snapshots.destroy_all()
         self.children.destroy_all()
