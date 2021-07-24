@@ -23,10 +23,14 @@ class _Handler(zonys.core.configuration.Handler):
             *destination.parts[1:],
         )
 
-        shutil.copytree(
-            pathlib.Path(event.options["source"]),
-            destination,
-        )
+        source = pathlib.Path(event.options["source"])
+        if not source.is_absolute():
+            source = event.base.joinpath(source)
+
+        if source.is_dir():
+            shutil.copytree(source, destination)
+        else:
+            shutil.copyfile(source, destination)
 
 
 SCHEMA = {
