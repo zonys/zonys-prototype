@@ -17,7 +17,6 @@ class _Handler(zonys.core.configuration.Handler):
     ):
         path = pathlib.Path(event.options)
         if not path.is_absolute():
-            print(event.base)
             path = event.base.joinpath(path)
 
         configuration = ruamel.yaml.YAML().load(zonys.core.util.open(path))
