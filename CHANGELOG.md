@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.7.1
+- Fix path provisioning for files
+
 ### 0.7.0
 - Add path command
 - Add console command
