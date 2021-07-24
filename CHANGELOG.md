@@ -2,6 +2,15 @@
 
 ## Changelog
 
+### 0.7.0
+- Add path command
+- Add console command
+- Add execute command
+- Rename replace command to recreate
+- Fix variable lookup
+- Fix relative include and base
+- Fix destroy issues
+
 ### 0.6.1
 - Fix missing directive
 
