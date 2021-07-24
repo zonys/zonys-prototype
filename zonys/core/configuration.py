@@ -1,5 +1,7 @@
 import collections
 import os
+import pathlib
+import sys
 import typing
 
 import cerberus
@@ -79,7 +81,15 @@ class Manager:
         for (key, value) in kwargs.items():
             setattr(self, key, value)
 
-    def read(self, schemas, configuration):
+    def read(
+        self,
+        schemas,
+        configuration,
+        base: typing.Optional[pathlib.Path] = None,
+    ):
+        if base is None:
+            base = pathlib.Path(os.getcwd())
+
         current_configuration = {
             **configuration,
         }
@@ -95,9 +105,7 @@ class Manager:
                 if handler_detail.handler not in self.__attached_handlers:
                     handler_detail.handler.on_attach(
                         AttachEvent(
-                            self,
-                            handler_detail.configuration,
-                            configuration,
+                            self, handler_detail.configuration, configuration, base
                         )
                     )
 
@@ -108,6 +116,7 @@ class Manager:
                         self,
                         handler_detail.configuration,
                         configuration,
+                        base,
                         schemas,
                     )
                 )
@@ -117,6 +126,7 @@ class Manager:
                         handler,
                         handler_detail.configuration,
                         configuration,
+                        base,
                     )
                 )
 
@@ -125,6 +135,7 @@ class Manager:
                         self,
                         handler_detail.configuration,
                         configuration,
+                        base,
                         schemas,
                     )
                 )
@@ -147,6 +158,7 @@ class Manager:
             instance,
             options,
             configuration,
+            base,
         ) in self.__commit_handlers:
             if not hasattr(instance, on_commit_method_name):
                 continue
@@ -184,6 +196,7 @@ class Manager:
                 self,
                 options,
                 configuration,
+                base,
                 kwargs,
             )
             instance.on_normalize(normalize_event)
@@ -192,6 +205,7 @@ class Manager:
                 self,
                 options,
                 configuration,
+                base,
                 kwargs,
                 normalize_event.normalized,
             )
@@ -206,6 +220,7 @@ class Manager:
                     self,
                     options,
                     configuration,
+                    base,
                     kwargs,
                     normalize_event.normalized,
                 )
@@ -224,10 +239,11 @@ class Manager:
 
 
 class Event:
-    def __init__(self, manager, options, configuration):
+    def __init__(self, manager, options, configuration, base: pathlib.Path):
         self.__manager = manager
         self.__options = options
         self.__configuration = configuration
+        self.__base = base
 
     @property
     def manager(self) -> "Manager":
@@ -241,6 +257,10 @@ class Event:
     def configuration(self):
         return self.__configuration
 
+    @property
+    def base(self) -> pathlib.Path:
+        return self.__base
+
 
 class AttachEvent(Event):
     pass
@@ -248,8 +268,10 @@ class AttachEvent(Event):
 
 class TransactionEvent(Event):
     # pylint: disable=too-many-arguments
-    def __init__(self, manager, options, configuration, context, normalized):
-        super().__init__(manager, options, configuration)
+    def __init__(
+        self, manager, options, configuration, base: pathlib.Path, context, normalized
+    ):
+        super().__init__(manager, options, configuration, base)
 
         self.__context = context
         self.__normalized = normalized
@@ -272,8 +294,8 @@ class RollbackEvent(TransactionEvent):
 
 
 class ConfigurationEvent(Event):
-    def __init__(self, manager, options, configuration, schemas):
-        super().__init__(manager, options, configuration)
+    def __init__(self, manager, options, configuration, base: pathlib.Path, schemas):
+        super().__init__(manager, options, configuration, base)
         self.__schemas = schemas
 
     @property
@@ -290,8 +312,8 @@ class AfterConfigurationEvent(ConfigurationEvent):
 
 
 class NormalizeEvent(Event):
-    def __init__(self, manager, options, configuration, context):
-        super().__init__(manager, options, configuration)
+    def __init__(self, manager, options, configuration, base: pathlib.Path, context):
+        super().__init__(manager, options, configuration, base)
 
         self.__context = context
         self.__normalized = {}

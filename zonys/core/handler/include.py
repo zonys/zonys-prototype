@@ -12,21 +12,18 @@ import zonys.core.util
 
 class _Handler(zonys.core.configuration.Handler):
     @staticmethod
-    def on_normalize(event: "zonys.core.configuration.NormalizeEvent"):
-        event.normalized.update(
-            {
-                "name": pathlib.Path(event.options),
-            }
-        )
-
-    @staticmethod
     def before_configuration(
         event: "zonys.core.configuration.BeforeConfigurationEvent",
     ):
-        configuration = ruamel.yaml.YAML().load(zonys.core.util.open(event.options))
+        path = pathlib.Path(event.options)
+        if not path.is_absolute():
+            print(event.base)
+            path = event.base.joinpath(path)
+
+        configuration = ruamel.yaml.YAML().load(zonys.core.util.open(path))
 
         if configuration is not None:
-            event.manager.read(event.schemas, configuration)
+            event.manager.read(event.schemas, configuration, path.parent)
 
             event.configuration.update(
                 mergedeep.merge(
